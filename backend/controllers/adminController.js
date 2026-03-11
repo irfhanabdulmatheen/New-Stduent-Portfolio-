@@ -108,6 +108,109 @@ exports.deleteProject = async (req, res) => {
     }
 };
 
+// @desc    Get all teachers
+// @route   GET /api/admin/teachers
+exports.getTeachers = async (req, res) => {
+    try {
+        const teachers = await User.find({ role: 'teacher' }).select('-password').sort({ createdAt: -1 });
+        
+        const teachersWithStats = await Promise.all(teachers.map(async (teacher) => {
+            const studentCount = await Profile.countDocuments({ teacherId: teacher._id });
+            return {
+                ...teacher.toObject(),
+                studentCount
+            };
+        }));
+
+        res.json(teachersWithStats);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Create a new user (Teacher or Student)
+// @route   POST /api/admin/users
+exports.createUser = async (req, res) => {
+    try {
+        const { name, email, password, role } = req.body;
+        
+        if (!['student', 'teacher'].includes(role)) {
+            return res.status(400).json({ message: 'Invalid role' });
+        }
+
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ message: 'User already exists with this email' });
+        }
+
+        user = new User({ name, email, password, role });
+        await user.save();
+
+        if (role === 'student' || role === 'teacher') {
+            await Profile.create({ userId: user._id });
+        }
+
+        res.status(201).json({ message: 'User created successfully', user: { id: user._id, name, email, role }});
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Delete a user
+// @route   DELETE /api/admin/users/:id
+exports.deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        if (user.role === 'admin') {
+            return res.status(403).json({ message: 'Cannot delete admin users' });
+        }
+
+        await User.findByIdAndDelete(req.params.id);
+        await Profile.findOneAndDelete({ userId: req.params.id });
+        await Project.deleteMany({ userId: req.params.id });
+        await Skill.deleteMany({ userId: req.params.id });
+        await Certification.deleteMany({ userId: req.params.id });
+
+        res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Assign student to a teacher
+// @route   PUT /api/admin/students/:id/assign
+exports.assignStudentToTeacher = async (req, res) => {
+    try {
+        const { teacherId } = req.body;
+        
+        const student = await User.findById(req.params.id);
+        if (!student || student.role !== 'student') {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        if (teacherId) {
+            const teacher = await User.findById(teacherId);
+            if (!teacher || teacher.role !== 'teacher') {
+                return res.status(404).json({ message: 'Teacher not found' });
+            }
+        }
+
+        // Update profile
+        await Profile.findOneAndUpdate(
+            { userId: req.params.id },
+            { teacherId: teacherId || null },
+            { new: true, upsert: true }
+        );
+
+        res.json({ message: 'Student assigned successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // @desc    Get analytics
 // @route   GET /api/admin/analytics
 exports.getAnalytics = async (req, res) => {
@@ -149,3 +252,5 @@ exports.getAnalytics = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+

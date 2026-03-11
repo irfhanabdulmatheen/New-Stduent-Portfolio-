@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getProjects, addProject, updateProject, deleteProject } from '../../services/api';
-import { HiPlus, HiPencil, HiTrash, HiExternalLink, HiX, HiPhotograph } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiTrash, HiExternalLink, HiX, HiPhotograph, HiClock, HiCheckCircle, HiXCircle } from 'react-icons/hi';
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
@@ -106,7 +106,7 @@ const Projects = () => {
                     {projects.map((project) => (
                         <div key={project._id} className="card-hover group overflow-hidden p-0">
                             {/* Image */}
-                            <div className="h-44 bg-gradient-to-br from-primary-100 to-violet-100 dark:from-primary-900/20 dark:to-violet-900/20 overflow-hidden">
+                            <div className="h-44 bg-gradient-to-br from-primary-100 to-violet-100 dark:from-primary-900/20 dark:to-violet-900/20 overflow-hidden relative">
                                 {project.image ? (
                                     <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                 ) : (
@@ -114,6 +114,17 @@ const Projects = () => {
                                         <HiPhotograph className="w-12 h-12 text-primary-300 dark:text-primary-700" />
                                     </div>
                                 )}
+                                {/* Status Badge */}
+                                <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm border border-white/20 backdrop-blur-md
+                                    ${project.status === 'approved' ? 'bg-emerald-100/90 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-300' :
+                                        project.status === 'rejected' ? 'bg-red-100/90 text-red-700 dark:bg-red-900/80 dark:text-red-300' :
+                                            'bg-amber-100/90 text-amber-700 dark:bg-amber-900/80 dark:text-amber-300'
+                                    }`}>
+                                    {project.status === 'approved' ? <HiCheckCircle className="w-3.5 h-3.5" /> :
+                                        project.status === 'rejected' ? <HiXCircle className="w-3.5 h-3.5" /> :
+                                            <HiClock className="w-3.5 h-3.5" />}
+                                    <span className="capitalize">{project.status}</span>
+                                </div>
                             </div>
 
                             {/* Content */}

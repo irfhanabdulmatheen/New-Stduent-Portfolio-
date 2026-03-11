@@ -59,12 +59,15 @@ exports.login = async (req, res) => {
         }
 
         const { email, password } = req.body;
+        console.log(`Login attempt for: ${email}`);
 
         // Check for user
         const user = await User.findOne({ email });
         if (!user) {
+            console.log(`User not found: ${email}`);
             return res.status(400).json({ message: 'Invalid credentials' });
         }
+        console.log(`User found: ${user.email}, role: ${user.role}`);
 
         // Check if active
         if (!user.isActive) {
@@ -72,12 +75,16 @@ exports.login = async (req, res) => {
         }
 
         // Check password
+        console.log('Comparing passwords...');
         const isMatch = await user.comparePassword(password);
+        console.log(`Password match: ${isMatch}`);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        console.log('Generating token...');
         const token = generateToken(user._id);
+        console.log('Login successful');
 
         res.json({
             token,

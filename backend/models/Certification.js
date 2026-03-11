@@ -22,6 +22,11 @@ const certificationSchema = new mongoose.Schema({
     certificateFile: {
         type: String,
         default: ''
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
     }
 }, { timestamps: true });
 

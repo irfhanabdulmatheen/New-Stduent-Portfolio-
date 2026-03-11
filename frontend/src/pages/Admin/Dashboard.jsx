@@ -1,22 +1,41 @@
 import { useState, useEffect } from 'react';
-import { getAnalytics } from '../../services/api';
-import { HiUsers, HiCollection, HiLightningBolt, HiAcademicCap, HiShieldExclamation, HiCheckCircle } from 'react-icons/hi';
+import { getAnalytics, getPendingProjects, updateProjectStatus } from '../../services/api';
+import { HiUsers, HiCollection, HiLightningBolt, HiAcademicCap, HiShieldExclamation, HiCheckCircle, HiCheck, HiX } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
     const [analytics, setAnalytics] = useState(null);
+    const [pendingProjects, setPendingProjects] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchAnalytics = async () => {
+        const fetchData = async () => {
             try {
-                const res = await getAnalytics();
-                setAnalytics(res.data);
+                const [analyticsRes, pendingRes] = await Promise.all([
+                    getAnalytics(),
+                    getPendingProjects()
+                ]);
+                setAnalytics(analyticsRes.data);
+                setPendingProjects(pendingRes.data);
             } catch (err) { console.error(err); }
             setLoading(false);
         };
-        fetchAnalytics();
+        fetchData();
     }, []);
+
+    const handleStatusUpdate = async (id, status) => {
+        try {
+            await updateProjectStatus(id, status);
+            setPendingProjects(prev => prev.filter(p => p._id !== id));
+            // Update local analytics if approved
+            if (status === 'approved' && analytics) {
+                setAnalytics(prev => ({
+                    ...prev,
+                    totalProjects: prev.totalProjects + 1
+                }));
+            }
+        } catch (err) { console.error(err); }
+    };
 
     if (loading) {
         return (
@@ -41,6 +60,48 @@ const AdminDashboard = () => {
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">System overview and management</p>
             </div>
+
+            {/* Pending Projects */}
+            {pendingProjects.length > 0 && (
+                <div className="card border-l-4 border-l-amber-500">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <HiLightningBolt className="w-5 h-5 text-amber-500" />
+                        Pending Project Approvals
+                        <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">{pendingProjects.length}</span>
+                    </h2>
+                    <div className="space-y-4">
+                        {pendingProjects.map(project => (
+                            <div key={project._id} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">{project.title}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">{project.description}</p>
+                                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                                        <span>By: <span className="font-medium text-gray-900 dark:text-white">{project.userId?.name}</span></span>
+                                        <span>•</span>
+                                        <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                                        {project.githubLink && (
+                                            <>
+                                                <span>•</span>
+                                                <a href={project.githubLink} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">View Code</a>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button onClick={() => handleStatusUpdate(project._id, 'approved')}
+                                        className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors flex items-center gap-1">
+                                        <HiCheck className="w-4 h-4" /> Approve
+                                    </button>
+                                    <button onClick={() => handleStatusUpdate(project._id, 'rejected')}
+                                        className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors flex items-center gap-1">
+                                        <HiX className="w-4 h-4" /> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

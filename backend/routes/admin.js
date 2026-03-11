@@ -7,7 +7,11 @@ const {
     getStudentDetail,
     toggleBlockStudent,
     deleteProject,
-    getAnalytics
+    getAnalytics,
+    getTeachers,
+    createUser,
+    deleteUser,
+    assignStudentToTeacher
 } = require('../controllers/adminController');
 
 // All routes require auth + admin role
@@ -17,8 +21,16 @@ router.use(auth, admin);
 router.get('/students', getStudents);
 router.get('/students/:id', getStudentDetail);
 router.put('/students/:id/block', toggleBlockStudent);
+router.put('/students/:id/assign', assignStudentToTeacher);
 
-// Projects (admin can delete any)
+// Teachers
+router.get('/teachers', getTeachers);
+
+// Users
+router.post('/users', createUser);
+router.delete('/users/:id', deleteUser);
+
+// Projects
 router.delete('/projects/:id', deleteProject);
 
 // Analytics

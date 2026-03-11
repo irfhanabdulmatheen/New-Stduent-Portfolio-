@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import DarkModeToggle from './DarkModeToggle';
 import {
     HiHome, HiUser, HiCollection, HiLightningBolt, HiAcademicCap,
-    HiDocumentText, HiLogout, HiUsers, HiChartBar, HiMenu, HiX
+    HiDocumentText, HiLogout, HiUsers, HiChartBar, HiMenu, HiX,
+    HiBriefcase
 } from 'react-icons/hi';
 import { useState } from 'react';
 
@@ -19,20 +20,25 @@ const Sidebar = () => {
 
     const studentLinks = [
         { to: '/student', icon: HiHome, label: 'Dashboard', end: true },
-        { to: '/student/profile', icon: HiUser, label: 'Profile' },
         { to: '/student/projects', icon: HiCollection, label: 'Projects' },
         { to: '/student/skills', icon: HiLightningBolt, label: 'Skills' },
         { to: '/student/certifications', icon: HiAcademicCap, label: 'Certifications' },
-        { to: '/student/resume', icon: HiDocumentText, label: 'Resume' },
+        { to: '/student/placements', icon: HiBriefcase, label: 'Placements' },
     ];
 
     const adminLinks = [
         { to: '/admin', icon: HiHome, label: 'Dashboard', end: true },
-        { to: '/admin/students', icon: HiUsers, label: 'Students' },
+        { to: '/admin/students', icon: HiUsers, label: 'User Management' },
         { to: '/admin/analytics', icon: HiChartBar, label: 'Analytics' },
     ];
 
-    const links = user?.role === 'admin' ? adminLinks : studentLinks;
+    const teacherLinks = [
+        { to: '/teacher', icon: HiUsers, label: 'My Students', end: true },
+    ];
+
+    let links = studentLinks;
+    if (user?.role === 'admin') links = adminLinks;
+    else if (user?.role === 'teacher') links = teacherLinks;
 
     const navContent = (
         <>

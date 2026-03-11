@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getProfile, getProjects, getResumeData } from '../../services/api';
+import { getProfile, getProjects } from '../../services/api';
 import {
-    HiLogout, HiPhone, HiDownload, HiDocumentText,
+    HiLogout, HiPhone, HiDocumentText,
     HiFolderOpen, HiExternalLink, HiAcademicCap,
     HiCollection, HiLightningBolt, HiCheckCircle
 } from 'react-icons/hi';
@@ -66,12 +66,6 @@ const StudentDashboard = () => {
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Here's what's happening with your portfolio today.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="btn-secondary py-2 flex items-center gap-2">
-                        <HiDownload className="w-4 h-4" />
-                        Download CV
-                    </button>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -82,7 +76,7 @@ const StudentDashboard = () => {
                         <div className="relative pt-4">
                             <div className="relative inline-block mb-4">
                                 <img
-                                    src={profile?.profileImage ? `http://localhost:5000${profile.profileImage}` : defaultAvatar}
+                                    src={profile?.profileImage ? `http://localhost:5001${profile.profileImage}` : defaultAvatar}
                                     alt="Profile"
                                     className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md mx-auto"
                                 />
@@ -93,7 +87,7 @@ const StudentDashboard = () => {
 
                             <div className="mt-4 flex flex-wrap justify-center gap-2">
                                 <span className="badge-primary uppercase tracking-tighter">Continuing</span>
-                                <span className="badge-success uppercase tracking-tighter">Active</span>
+                                <span className="badge-success uppercase tracking-tighter">3rd Year</span>
                             </div>
 
                             <div className="mt-6 space-y-4 border-t border-gray-100 dark:border-gray-800 pt-6 text-left">
@@ -188,7 +182,7 @@ const StudentDashboard = () => {
                                                 <span className={`font-black text-xs ${sub.grade === 'O' ? 'text-emerald-500' : 'text-primary-500'}`}>{sub.grade}</span>
                                             </td>
                                             <td className="py-4 text-center">
-                                                <HiCheckCircle className="w-4 h-4 text-emerald-500 mx-auto" />
+                                                <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400 select-none">PASS</span>
                                             </td>
                                         </tr>
                                     ))}
@@ -235,7 +229,7 @@ const StudentDashboard = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

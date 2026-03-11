@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: 'http://localhost:5001/api',
 });
 
 // Add a request interceptor to add the auth token to headers
@@ -56,14 +56,23 @@ export const getStudentCertifications = getCertifications; // Alias
 export const addStudentCertification = addCertification; // Alias
 export const deleteStudentCertification = deleteCertification; // Alias
 
-// Student Resume
-export const getResumeData = () => api.get('/student/resume');
-
 // Admin
 export const getStudents = (params) => api.get('/admin/students', { params });
+export const getTeachers = () => api.get('/admin/teachers');
+export const createUser = (data) => api.post('/admin/users', data);
+export const deleteUser = (id) => api.delete(`/admin/users/${id}`);
+export const assignStudentToTeacher = (studentId, teacherId) => api.put(`/admin/students/${studentId}/assign`, { teacherId });
 export const getStudentDetail = (id) => api.get(`/admin/students/${id}`);
 export const toggleBlockStudent = (id) => api.put(`/admin/students/${id}/block`);
 export const adminDeleteProject = (id) => api.delete(`/admin/projects/${id}`);
 export const getAnalytics = () => api.get('/admin/analytics');
+export const getPendingProjects = () => api.get('/admin/projects/pending');
+export const updateProjectStatus = (id, status) => api.put(`/admin/projects/${id}/status`, { status });
+
+// Teacher
+export const getAssignedStudents = (params) => api.get('/teacher/students', { params });
+export const getAssignedStudentDetail = (id) => api.get(`/teacher/students/${id}`);
+export const teacherUpdateProjectStatus = (id, status) => api.put(`/teacher/projects/${id}/status`, { status });
+export const teacherUpdateCertStatus = (id, status) => api.put(`/teacher/certifications/${id}/status`, { status });
 
 export default api;

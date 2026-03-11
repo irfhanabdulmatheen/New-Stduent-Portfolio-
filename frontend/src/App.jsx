@@ -4,24 +4,25 @@ import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/DashboardLayout';
 
 // Public Pages
-import Landing from './pages/Landing';
-import StudentLogin from './pages/StudentLogin';
+import UnifiedLogin from './pages/UnifiedLogin';
 import StudentRegister from './pages/StudentRegister';
-import AdminLogin from './pages/AdminLogin';
 
 // Student Pages
 import StudentDashboard from './pages/Student/Dashboard';
-import StudentProfile from './pages/Student/Profile';
 import StudentProjects from './pages/Student/Projects';
 import StudentSkills from './pages/Student/Skills';
 import StudentCertifications from './pages/Student/Certifications';
-import StudentResume from './pages/Student/Resume';
+import StudentPlacements from './pages/Student/Placements';
 
 // Admin Pages
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminStudentList from './pages/Admin/StudentList';
 import AdminStudentDetail from './pages/Admin/StudentDetail';
 import AdminAnalytics from './pages/Admin/Analytics';
+
+// Teacher Pages
+import TeacherDashboard from './pages/Teacher/Dashboard';
+import TeacherStudentDetail from './pages/Teacher/StudentDetail';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -32,10 +33,8 @@ function App() {
             <Router>
                 <Routes>
                     {/* Public Routes */}
-                    <Route path="/" element={<Landing />} />
-                    <Route path="/login" element={<StudentLogin />} />
+                    <Route path="/" element={<UnifiedLogin />} />
                     <Route path="/register" element={<StudentRegister />} />
-                    <Route path="/admin/login" element={<AdminLogin />} />
 
                     {/* Student Routes */}
                     <Route
@@ -47,11 +46,10 @@ function App() {
                         }
                     >
                         <Route index element={<StudentDashboard />} />
-                        <Route path="profile" element={<StudentProfile />} />
                         <Route path="projects" element={<StudentProjects />} />
                         <Route path="skills" element={<StudentSkills />} />
                         <Route path="certifications" element={<StudentCertifications />} />
-                        <Route path="resume" element={<StudentResume />} />
+                        <Route path="placements" element={<StudentPlacements />} />
                     </Route>
 
                     {/* Admin Routes */}
@@ -67,6 +65,19 @@ function App() {
                         <Route path="students" element={<AdminStudentList />} />
                         <Route path="students/:id" element={<AdminStudentDetail />} />
                         <Route path="analytics" element={<AdminAnalytics />} />
+                    </Route>
+
+                    {/* Teacher Routes */}
+                    <Route
+                        path="/teacher"
+                        element={
+                            <ProtectedRoute role="teacher">
+                                <DashboardLayout />
+                            </ProtectedRoute>
+                        }
+                    >
+                        <Route index element={<TeacherDashboard />} />
+                        <Route path="students/:id" element={<TeacherStudentDetail />} />
                     </Route>
 
                     {/* Catch all */}

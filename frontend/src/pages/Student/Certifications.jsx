@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getCertifications, addCertification, deleteCertification } from '../../services/api';
-import { HiPlus, HiTrash, HiX, HiAcademicCap, HiDownload } from 'react-icons/hi';
+import { HiPlus, HiTrash, HiX, HiAcademicCap, HiDownload, HiCheckCircle, HiXCircle, HiClock } from 'react-icons/hi';
 
 const Certifications = () => {
     const [certs, setCerts] = useState([]);
@@ -18,6 +18,17 @@ const Certifications = () => {
             setCerts(res.data);
         } catch (err) { console.error(err); }
         setLoading(false);
+    };
+
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case 'approved': 
+                return <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-wider shadow-sm"><HiCheckCircle className="w-3 h-3" /> Approved</span>;
+            case 'rejected': 
+                return <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 uppercase tracking-wider shadow-sm"><HiXCircle className="w-3 h-3" /> Rejected</span>;
+            default: 
+                return <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider shadow-sm"><HiClock className="w-3 h-3" /> Pending</span>;
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -59,7 +70,7 @@ const Certifications = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Certifications</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">Certifications</h1>
                     <p className="text-gray-600 dark:text-gray-400 mt-1">{certs.length} certification{certs.length !== 1 ? 's' : ''}</p>
                 </div>
                 <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2">
@@ -70,7 +81,7 @@ const Certifications = () => {
             {certs.length === 0 ? (
                 <div className="card text-center py-16">
                     <HiAcademicCap className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No certifications</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 uppercase">No certifications</h3>
                     <p className="text-gray-500 dark:text-gray-400 mb-6">Upload your certifications to showcase your achievements</p>
                     <button onClick={() => setShowModal(true)} className="btn-primary inline-flex items-center gap-2">
                         <HiPlus className="w-5 h-5" /> Add Certification
@@ -79,18 +90,21 @@ const Certifications = () => {
             ) : (
                 <div className="grid md:grid-cols-2 gap-4">
                     {certs.map((cert) => (
-                        <div key={cert._id} className="card-hover">
+                        <div key={cert._id} className="card-hover group">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                                         <HiAcademicCap className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 dark:text-white">{cert.courseName}</h3>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="font-bold text-gray-900 dark:text-white uppercase text-sm">{cert.courseName}</h3>
+                                            {getStatusBadge(cert.status)}
+                                        </div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">{cert.issuedBy}</p>
                                         {cert.completionDate && (
-                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                                Completed: {new Date(cert.completionDate).toLocaleDateString()}
+                                            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-2 flex items-center gap-1">
+                                                <HiClock className="w-3 h-3" /> COMPLETED: {new Date(cert.completionDate).toLocaleDateString()}
                                             </p>
                                         )}
                                     </div>

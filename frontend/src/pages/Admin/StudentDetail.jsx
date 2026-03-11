@@ -89,6 +89,12 @@ const StudentDetail = () => {
                     {profile?.phone && (
                         <div><span className="text-gray-500 dark:text-gray-400">Phone</span><p className="font-medium text-gray-900 dark:text-white flex items-center gap-1"><HiPhone className="w-4 h-4" />{profile.phone}</p></div>
                     )}
+                    <div>
+                        <span className="text-gray-500 dark:text-gray-400">Assigned Mentor</span>
+                        <p className="font-bold text-primary-600 dark:text-primary-400 uppercase text-xs">
+                            {data.user.profile?.teacherId ? 'Assigned' : 'Unassigned'}
+                        </p>
+                    </div>
                     <div><span className="text-gray-500 dark:text-gray-400">Status</span><p><span className={user.isActive ? 'badge-success' : 'badge-danger'}>{user.isActive ? 'Active' : 'Blocked'}</span></p></div>
                     <div><span className="text-gray-500 dark:text-gray-400">Joined</span><p className="font-medium text-gray-900 dark:text-white">{new Date(user.createdAt).toLocaleDateString()}</p></div>
                 </div>
@@ -108,7 +114,16 @@ const StudentDetail = () => {
                 ) : (
                     <div className="grid md:grid-cols-2 gap-4">
                         {projects?.map((project) => (
-                            <div key={project._id} className="p-4 rounded-xl border border-gray-100 dark:border-dark-border">
+                            <div key={project._id} className="p-4 rounded-xl border border-gray-100 dark:border-dark-border relative">
+                                <div className="absolute top-4 right-12">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                                        project.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                                        project.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                        'bg-amber-100 text-amber-700'
+                                    }`}>
+                                        {project.status || 'pending'}
+                                    </span>
+                                </div>
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{project.title}</h3>
@@ -161,12 +176,21 @@ const StudentDetail = () => {
                 ) : (
                     <div className="space-y-3">
                         {certifications?.map((cert) => (
-                            <div key={cert._id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                                <HiAcademicCap className="w-5 h-5 text-emerald-500" />
-                                <div>
-                                    <p className="font-medium text-sm text-gray-900 dark:text-white">{cert.courseName}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{cert.issuedBy}</p>
+                            <div key={cert._id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                                <div className="flex items-center gap-3">
+                                    <HiAcademicCap className="w-5 h-5 text-emerald-500" />
+                                    <div>
+                                        <p className="font-medium text-sm text-gray-900 dark:text-white">{cert.courseName}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{cert.issuedBy}</p>
+                                    </div>
                                 </div>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                                    cert.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                                    cert.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                    'bg-amber-100 text-amber-700'
+                                }`}>
+                                    {cert.status || 'pending'}
+                                </span>
                             </div>
                         ))}
                     </div>

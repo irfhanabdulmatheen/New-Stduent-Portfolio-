@@ -7,6 +7,11 @@ const profileSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    teacherId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
     department: {
         type: String,
         trim: true,

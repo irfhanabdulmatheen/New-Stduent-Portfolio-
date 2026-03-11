@@ -25,8 +25,8 @@ exports.getProfile = async (req, res) => {
 // @route   PUT /api/student/profile
 exports.updateProfile = async (req, res) => {
     try {
-        const { department, year, cgpa, bio, phone } = req.body;
-        const updateData = { department, year, cgpa, bio, phone };
+        const { bio, phone, name } = req.body;
+        const updateData = { bio, phone };
 
         if (req.file) {
             updateData.profileImage = `/uploads/${req.file.filename}`;
@@ -34,13 +34,13 @@ exports.updateProfile = async (req, res) => {
 
         let profile = await Profile.findOneAndUpdate(
             { userId: req.user._id },
-            updateData,
+            { $set: updateData },
             { new: true, upsert: true }
         );
 
         // Update user name if provided
-        if (req.body.name) {
-            await User.findByIdAndUpdate(req.user._id, { name: req.body.name });
+        if (name) {
+            await User.findByIdAndUpdate(req.user._id, { name });
         }
 
         res.json(profile);

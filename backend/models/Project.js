@@ -28,6 +28,11 @@ const projectSchema = new mongoose.Schema({
     image: {
         type: String,
         default: ''
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
     }
 }, { timestamps: true });
 
