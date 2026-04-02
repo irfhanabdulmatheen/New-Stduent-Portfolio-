@@ -23,6 +23,11 @@ const certificationSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    link: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     status: {
         type: String,
         enum: ['pending', 'approved', 'rejected'],

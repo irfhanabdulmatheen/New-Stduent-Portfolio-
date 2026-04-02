@@ -16,8 +16,17 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
+        required: function() { return !this.googleId; }, // Required only if not a Google user
         minlength: 6
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true // Allows multiple null values
+    },
+    picture: {
+        type: String,
+        default: ''
     },
     role: {
         type: String,
@@ -32,6 +41,11 @@ const userSchema = new mongoose.Schema({
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
+    // Keep role consistent so queries and comparisons don't break.
+    if (typeof this.role === 'string') {
+        this.role = this.role.trim().toLowerCase();
+    }
+
     if (!this.isModified('password')) return next();
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

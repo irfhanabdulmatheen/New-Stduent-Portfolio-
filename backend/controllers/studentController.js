@@ -1,8 +1,8 @@
 const Profile = require('../models/Profile');
 const Project = require('../models/Project');
-const Skill = require('../models/Skill');
 const Certification = require('../models/Certification');
 const User = require('../models/User');
+const Placement = require('../models/Placement');
 
 // ==================== PROFILE ====================
 
@@ -25,8 +25,20 @@ exports.getProfile = async (req, res) => {
 // @route   PUT /api/student/profile
 exports.updateProfile = async (req, res) => {
     try {
-        const { bio, phone, name } = req.body;
-        const updateData = { bio, phone };
+        const { bio, phone, name, department, year, rollNo, degree, currentArrears, cgpaSemesters, cgpa } = req.body;
+        const updateData = {};
+        if (bio !== undefined) updateData.bio = bio;
+        if (phone !== undefined) updateData.phone = phone;
+        if (department !== undefined) updateData.department = department;
+        if (year !== undefined) updateData.year = year;
+        if (rollNo !== undefined) updateData.rollNo = rollNo;
+        if (degree !== undefined) updateData.degree = degree;
+        if (currentArrears !== undefined) updateData.currentArrears = currentArrears;
+        if (cgpa !== undefined) updateData.cgpa = cgpa;
+
+        if (cgpaSemesters !== undefined) {
+             updateData.cgpaSemesters = typeof cgpaSemesters === 'string' ? JSON.parse(cgpaSemesters) : cgpaSemesters;
+        }
 
         if (req.file) {
             updateData.profileImage = `/uploads/${req.file.filename}`;
@@ -67,12 +79,22 @@ exports.getProjects = async (req, res) => {
 exports.addProject = async (req, res) => {
     try {
         const { title, description, technologies, githubLink } = req.body;
+        const cleanTitle = title?.trim();
+
+        if (!cleanTitle) {
+            return res.status(400).json({ message: 'Project title is required' });
+        }
+
         const projectData = {
             userId: req.user._id,
-            title,
-            description,
-            technologies: typeof technologies === 'string' ? technologies.split(',').map(t => t.trim()) : technologies,
-            githubLink
+            title: cleanTitle,
+            description: description?.trim() || '',
+            technologies: typeof technologies === 'string'
+                ? technologies.split(',').map(t => t.trim()).filter(Boolean)
+                : Array.isArray(technologies)
+                    ? technologies.map(t => String(t).trim()).filter(Boolean)
+                    : [],
+            githubLink: githubLink?.trim() || ''
         };
 
         if (req.file) {
@@ -82,7 +104,11 @@ exports.addProject = async (req, res) => {
         const project = await Project.create(projectData);
         res.status(201).json(project);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Add project error:', error);
+        if (error.name === 'ValidationError' || error.name === 'CastError') {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Unable to add project right now' });
     }
 };
 
@@ -96,11 +122,25 @@ exports.updateProject = async (req, res) => {
         }
 
         const { title, description, technologies, githubLink } = req.body;
-        project.title = title || project.title;
-        project.description = description || project.description;
-        project.githubLink = githubLink || project.githubLink;
-        if (technologies) {
-            project.technologies = typeof technologies === 'string' ? technologies.split(',').map(t => t.trim()) : technologies;
+        if (title !== undefined) {
+            const cleanTitle = title.trim();
+            if (!cleanTitle) {
+                return res.status(400).json({ message: 'Project title is required' });
+            }
+            project.title = cleanTitle;
+        }
+        if (description !== undefined) {
+            project.description = description.trim();
+        }
+        if (githubLink !== undefined) {
+            project.githubLink = githubLink.trim();
+        }
+        if (technologies !== undefined) {
+            project.technologies = typeof technologies === 'string'
+                ? technologies.split(',').map(t => t.trim()).filter(Boolean)
+                : Array.isArray(technologies)
+                    ? technologies.map(t => String(t).trim()).filter(Boolean)
+                    : [];
         }
         if (req.file) {
             project.image = `/uploads/${req.file.filename}`;
@@ -109,7 +149,11 @@ exports.updateProject = async (req, res) => {
         await project.save();
         res.json(project);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Update project error:', error);
+        if (error.name === 'ValidationError' || error.name === 'CastError') {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Unable to update project right now' });
     }
 };
 
@@ -127,67 +171,6 @@ exports.deleteProject = async (req, res) => {
     }
 };
 
-// ==================== SKILLS ====================
-
-// @desc    Get all skills
-// @route   GET /api/student/skills
-exports.getSkills = async (req, res) => {
-    try {
-        const skills = await Skill.find({ userId: req.user._id });
-        res.json(skills);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
-};
-
-// @desc    Add a skill
-// @route   POST /api/student/skills
-exports.addSkill = async (req, res) => {
-    try {
-        const { skillName, level, experience } = req.body;
-        const skill = await Skill.create({
-            userId: req.user._id,
-            skillName,
-            level,
-            experience
-        });
-        res.status(201).json(skill);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
-};
-
-// @desc    Update a skill
-// @route   PUT /api/student/skills/:id
-exports.updateSkill = async (req, res) => {
-    try {
-        const skill = await Skill.findOneAndUpdate(
-            { _id: req.params.id, userId: req.user._id },
-            req.body,
-            { new: true }
-        );
-        if (!skill) {
-            return res.status(404).json({ message: 'Skill not found' });
-        }
-        res.json(skill);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
-};
-
-// @desc    Delete a skill
-// @route   DELETE /api/student/skills/:id
-exports.deleteSkill = async (req, res) => {
-    try {
-        const skill = await Skill.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
-        if (!skill) {
-            return res.status(404).json({ message: 'Skill not found' });
-        }
-        res.json({ message: 'Skill deleted' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
-};
 
 // ==================== CERTIFICATIONS ====================
 
@@ -206,12 +189,19 @@ exports.getCertifications = async (req, res) => {
 // @route   POST /api/student/certifications
 exports.addCertification = async (req, res) => {
     try {
-        const { courseName, issuedBy, completionDate } = req.body;
+        const { courseName, issuedBy, completionDate, link } = req.body;
+        const cleanCourseName = courseName?.trim();
+
+        if (!cleanCourseName) {
+            return res.status(400).json({ message: 'Course name is required' });
+        }
+
         const certData = {
             userId: req.user._id,
-            courseName,
-            issuedBy,
-            completionDate
+            courseName: cleanCourseName,
+            issuedBy: issuedBy?.trim() || '',
+            completionDate: completionDate ? new Date(completionDate) : undefined,
+            link: link?.trim() || ''
         };
 
         if (req.file) {
@@ -221,7 +211,11 @@ exports.addCertification = async (req, res) => {
         const certification = await Certification.create(certData);
         res.status(201).json(certification);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Add certification error:', error);
+        if (error.name === 'ValidationError' || error.name === 'CastError') {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Unable to add certification right now' });
     }
 };
 
@@ -239,6 +233,51 @@ exports.deleteCertification = async (req, res) => {
     }
 };
 
+// ==================== PLACEMENTS ====================
+
+// @desc    Get all placements
+// @route   GET /api/student/placements
+exports.getPlacements = async (req, res) => {
+    try {
+        const placements = await Placement.find({ userId: req.user._id });
+        res.json(placements);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Add a placement
+// @route   POST /api/student/placements
+exports.addPlacement = async (req, res) => {
+    try {
+        const { company, role, package, date } = req.body;
+        const placement = await Placement.create({
+            userId: req.user._id,
+            company,
+            role,
+            package,
+            date
+        });
+        res.status(201).json(placement);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Delete a placement
+// @route   DELETE /api/student/placements/:id
+exports.deletePlacement = async (req, res) => {
+    try {
+        const placement = await Placement.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+        if (!placement) {
+            return res.status(404).json({ message: 'Placement not found' });
+        }
+        res.json({ message: 'Placement deleted' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // ==================== RESUME DATA ====================
 
 // @desc    Get all student data for resume
@@ -248,10 +287,10 @@ exports.getResumeData = async (req, res) => {
         const user = await User.findById(req.user._id).select('-password');
         const profile = await Profile.findOne({ userId: req.user._id });
         const projects = await Project.find({ userId: req.user._id });
-        const skills = await Skill.find({ userId: req.user._id });
         const certifications = await Certification.find({ userId: req.user._id });
+        const placements = await Placement.find({ userId: req.user._id });
 
-        res.json({ user, profile, projects, skills, certifications });
+        res.json({ user, profile, projects, certifications, placements });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }

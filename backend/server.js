@@ -56,7 +56,9 @@ app.use((err, req, res, next) => {
     if (err.name === 'MulterError') {
         return res.status(400).json({ message: `Upload error: ${err.message}` });
     }
-    res.status(500).json({ message: 'Something went wrong!' });
+    const statusCode = err.status || 500;
+    const message = err.message || 'Something went wrong!';
+    res.status(statusCode).json({ message });
 });
 
 // End of server.js

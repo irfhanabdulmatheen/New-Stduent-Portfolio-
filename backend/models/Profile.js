@@ -12,6 +12,25 @@ const profileSchema = new mongoose.Schema({
         ref: 'User',
         default: null
     },
+    rollNo: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    degree: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    currentArrears: {
+        type: String,
+        trim: true,
+        default: '0'
+    },
+    cgpaSemesters: {
+        type: [String],
+        default: []
+    },
     department: {
         type: String,
         trim: true,

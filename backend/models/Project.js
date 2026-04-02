@@ -29,6 +29,16 @@ const projectSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    liveLink: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    duration: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     status: {
         type: String,
         enum: ['pending', 'approved', 'rejected'],

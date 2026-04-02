@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const Project = require('./models/Project');
-const Skill = require('./models/Skill');
+
 const Certification = require('./models/Certification');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/student-portfolio';
@@ -24,20 +24,9 @@ const seedCSEData = async () => {
 
         // Clean up existing data for this student
         await Project.deleteMany({ userId: studentId });
-        await Skill.deleteMany({ userId: studentId });
         await Certification.deleteMany({ userId: studentId });
         console.log('Cleared existing data for the student');
 
-        // 1. Add CSE Skills
-        const skills = [
-            { userId: studentId, skillName: 'Data Structures & Algorithms', level: 'Intermediate', experience: 2 },
-            { userId: studentId, skillName: 'React.js', level: 'Advanced', experience: 1.5 },
-            { userId: studentId, skillName: 'Node.js & Express', level: 'Intermediate', experience: 1 },
-            { userId: studentId, skillName: 'Python', level: 'Advanced', experience: 3 },
-            { userId: studentId, skillName: 'MongoDB', level: 'Intermediate', experience: 1 }
-        ];
-        await Skill.insertMany(skills);
-        console.log('Added CSE Skills');
 
         // 2. Add Projects
         const projects = [

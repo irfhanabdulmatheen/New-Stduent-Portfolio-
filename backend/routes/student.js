@@ -10,13 +10,12 @@ const {
     addProject,
     updateProject,
     deleteProject,
-    getSkills,
-    addSkill,
-    updateSkill,
-    deleteSkill,
     getCertifications,
     addCertification,
     deleteCertification,
+    getPlacements,
+    addPlacement,
+    deletePlacement,
     getResumeData
 } = require('../controllers/studentController');
 
@@ -33,16 +32,16 @@ router.post('/projects', upload.single('image'), addProject);
 router.put('/projects/:id', upload.single('image'), updateProject);
 router.delete('/projects/:id', deleteProject);
 
-// Skills
-router.get('/skills', getSkills);
-router.post('/skills', addSkill);
-router.put('/skills/:id', updateSkill);
-router.delete('/skills/:id', deleteSkill);
 
 // Certifications
 router.get('/certifications', getCertifications);
 router.post('/certifications', upload.single('certificateFile'), addCertification);
 router.delete('/certifications/:id', deleteCertification);
+
+// Placements
+router.get('/placements', getPlacements);
+router.post('/placements', addPlacement);
+router.delete('/placements/:id', deletePlacement);
 
 // Resume
 router.get('/resume', getResumeData);

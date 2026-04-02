@@ -11,7 +11,9 @@ const {
     getTeachers,
     createUser,
     deleteUser,
-    assignStudentToTeacher
+    assignStudentToTeacher,
+    getDepartments,
+    createDepartment
 } = require('../controllers/adminController');
 
 // All routes require auth + admin role
@@ -35,5 +37,9 @@ router.delete('/projects/:id', deleteProject);
 
 // Analytics
 router.get('/analytics', getAnalytics);
+
+// Departments
+router.get('/departments', getDepartments);
+router.post('/departments', createDepartment);
 
 module.exports = router;
