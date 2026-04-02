@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getProjects, addProject, updateProject, deleteProject } from '../../services/api';
 import { HiPlus, HiPencil, HiTrash, HiExternalLink, HiX, HiPhotograph, HiClock, HiCheckCircle, HiXCircle } from 'react-icons/hi';
+import { toast } from 'react-toastify';
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
@@ -44,23 +45,35 @@ const Projects = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!form.title.trim()) {
+            toast.error('Project title is required');
+            return;
+        }
+
         setSaving(true);
         try {
             const formData = new FormData();
-            formData.append('title', form.title);
-            formData.append('description', form.description);
+            formData.append('title', form.title.trim());
+            formData.append('description', form.description.trim());
             formData.append('technologies', form.technologies);
-            formData.append('githubLink', form.githubLink);
+            formData.append('githubLink', form.githubLink.trim());
             if (image) formData.append('image', image);
 
             if (editingId) {
                 await updateProject(editingId, formData);
+                toast.success('Project updated successfully');
             } else {
                 await addProject(formData);
+                toast.success('Project added successfully');
             }
             setShowModal(false);
-            fetchProjects();
-        } catch (err) { console.error(err); }
+            setForm({ title: '', description: '', technologies: '', githubLink: '' });
+            setImage(null);
+            await fetchProjects();
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || 'Failed to save project');
+        }
         setSaving(false);
     };
 
@@ -69,7 +82,11 @@ const Projects = () => {
         try {
             await deleteProject(id);
             setProjects(projects.filter(p => p._id !== id));
-        } catch (err) { console.error(err); }
+            toast.success('Project deleted successfully');
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || 'Failed to delete project');
+        }
     };
 
     if (loading) {

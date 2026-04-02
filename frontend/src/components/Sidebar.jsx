@@ -4,7 +4,7 @@ import DarkModeToggle from './DarkModeToggle';
 import {
     HiHome, HiUser, HiCollection, HiLightningBolt, HiAcademicCap,
     HiDocumentText, HiLogout, HiUsers, HiChartBar, HiMenu, HiX,
-    HiBriefcase
+    HiOfficeBuilding, HiCog
 } from 'react-icons/hi';
 import { useState } from 'react';
 
@@ -21,24 +21,21 @@ const Sidebar = () => {
     const studentLinks = [
         { to: '/student', icon: HiHome, label: 'Dashboard', end: true },
         { to: '/student/projects', icon: HiCollection, label: 'Projects' },
-        { to: '/student/skills', icon: HiLightningBolt, label: 'Skills' },
         { to: '/student/certifications', icon: HiAcademicCap, label: 'Certifications' },
-        { to: '/student/placements', icon: HiBriefcase, label: 'Placements' },
     ];
 
     const adminLinks = [
-        { to: '/admin', icon: HiHome, label: 'Dashboard', end: true },
         { to: '/admin/students', icon: HiUsers, label: 'User Management' },
-        { to: '/admin/analytics', icon: HiChartBar, label: 'Analytics' },
     ];
 
     const teacherLinks = [
         { to: '/teacher', icon: HiUsers, label: 'My Students', end: true },
     ];
 
+    const role = typeof user?.role === 'string' ? user.role.trim().toLowerCase() : '';
     let links = studentLinks;
-    if (user?.role === 'admin') links = adminLinks;
-    else if (user?.role === 'teacher') links = teacherLinks;
+    if (role === 'admin') links = adminLinks;
+    else if (role === 'teacher') links = teacherLinks;
 
     const navContent = (
         <>
@@ -50,7 +47,7 @@ const Sidebar = () => {
                     </div>
                     <div>
                         <h1 className="font-bold text-gray-900 dark:text-white text-sm">Portfolio</h1>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role} Panel</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{role || user?.role} Panel</p>
                     </div>
                 </div>
             </div>

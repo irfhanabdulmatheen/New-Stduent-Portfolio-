@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getStudents, getTeachers, toggleBlockStudent, createUser, deleteUser, assignStudentToTeacher } from '../../services/api';
-import { HiSearch, HiEye, HiBan, HiCheckCircle, HiTrash, HiPlus, HiUserAdd, HiUsers, HiUserGroup, HiAcademicCap, HiShieldCheck, HiPencil } from 'react-icons/hi';
+import { getStudents, getTeachers, getAnalytics, toggleBlockStudent, createUser, deleteUser, assignStudentToTeacher } from '../../services/api';
+import { HiSearch, HiEye, HiBan, HiCheckCircle, HiTrash, HiPlus, HiUserAdd, HiUsers, HiUserGroup, HiAcademicCap, HiShieldCheck, HiPencil, HiCollection } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -10,10 +10,10 @@ const StudentList = () => {
     const [activeTab, setActiveTab] = useState('students');
     const [students, setStudents] = useState([]);
     const [teachers, setTeachers] = useState([]);
+    const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [deptFilter, setDeptFilter] = useState('');
-    const [skillFilter, setSkillFilter] = useState('');
 
     // Modals state
     const [showAddModal, setShowAddModal] = useState(false);
@@ -34,25 +34,23 @@ const StudentList = () => {
             const params = {};
             if (search) params.search = search;
             if (deptFilter) params.department = deptFilter;
-            if (skillFilter) params.skill = skillFilter;
             
-            const [studentsRes, teachersRes] = await Promise.all([
+            const [studentsRes, teachersRes, analyticsRes] = await Promise.allSettled([
                 getStudents(params),
-                getTeachers()
+                getTeachers(),
+                getAnalytics()
             ]);
-            
-            setStudents(studentsRes.data);
-            setTeachers(teachersRes.data);
+
+            if (studentsRes.status === 'fulfilled') setStudents(studentsRes.value.data);
+            if (teachersRes.status === 'fulfilled') setTeachers(teachersRes.value.data);
+            if (analyticsRes.status === 'fulfilled') setAnalytics(analyticsRes.value.data);
+            else setAnalytics(null);
         } catch (err) { 
             console.error(err); 
             toast.error('Failed to load data');
+            setAnalytics(null);
         }
         setLoading(false);
-    };
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        fetchData();
     };
 
     const handleToggleBlock = async (id) => {
@@ -260,7 +258,7 @@ const StudentList = () => {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="card-hover p-6 bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/10 dark:to-dark-card border-l-4 border-l-primary-500">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl text-primary-600">
@@ -272,6 +270,7 @@ const StudentList = () => {
                         </div>
                     </div>
                 </div>
+
                 <div className="card-hover p-6 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/10 dark:to-dark-card border-l-4 border-l-emerald-500">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl text-emerald-600">
@@ -283,14 +282,27 @@ const StudentList = () => {
                         </div>
                     </div>
                 </div>
+
+                <div className="card-hover p-6 bg-gradient-to-br from-violet-50 to-white dark:from-violet-900/10 dark:to-dark-card border-l-4 border-l-violet-500">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-violet-100 dark:bg-violet-900/30 rounded-xl text-violet-600">
+                            <HiCollection className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Projects</p>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{analytics?.totalProjects || 0}</h3>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="card-hover p-6 bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-dark-card border-l-4 border-l-amber-500">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl text-amber-600">
                             <HiAcademicCap className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Portfolio Score</p>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">8.4</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Certifications</p>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{analytics?.totalCertifications || 0}</h3>
                         </div>
                     </div>
                 </div>
@@ -315,19 +327,60 @@ const StudentList = () => {
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => { setFormData({ name: '', email: '', password: '', role: 'student' }); setShowAddModal(true); }}
-                            className="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-primary-600 border border-primary-200 dark:border-primary-900/50 text-xs font-bold hover:bg-primary-50 transition-all flex items-center gap-2 shadow-sm"
-                        >
-                            <HiPlus className="w-4 h-4" /> ADD STUDENT
-                        </button>
-                        <button
-                            onClick={() => { setFormData({ name: '', email: '', password: '', role: 'teacher' }); setShowAddModal(true); }}
-                            className="px-4 py-2 rounded-xl bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-all flex items-center gap-2 shadow-lg shadow-primary-200"
-                        >
-                            <HiPlus className="w-4 h-4" /> ADD TEACHER
-                        </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {activeTab === 'students' && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <div className="relative">
+                                    <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder="Search student..."
+                                        className="input-field pl-10 w-56"
+                                    />
+                                </div>
+                                <input
+                                    value={deptFilter}
+                                    onChange={(e) => setDeptFilter(e.target.value)}
+                                    placeholder="Department filter..."
+                                    className="input-field w-48"
+                                />
+                                <button
+                                    onClick={fetchData}
+                                    className="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-primary-600 border border-primary-200 dark:border-primary-900/50 text-xs font-bold hover:bg-primary-50 transition-all flex items-center gap-2 shadow-sm"
+                                >
+                                    Apply
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setSearch('');
+                                        setDeptFilter('');
+                                        setTimeout(() => fetchData(), 0);
+                                    }}
+                                    className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        )}
+
+                        {activeTab === 'students' && (
+                            <button
+                                onClick={() => { setFormData({ name: '', email: '', password: '', role: 'student' }); setShowAddModal(true); }}
+                                className="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 text-primary-600 border border-primary-200 dark:border-primary-900/50 text-xs font-bold hover:bg-primary-50 transition-all flex items-center gap-2 shadow-sm"
+                            >
+                                <HiPlus className="w-4 h-4" /> ADD STUDENT
+                            </button>
+                        )}
+
+                        {activeTab === 'teachers' && (
+                            <button
+                                onClick={() => { setFormData({ name: '', email: '', password: '', role: 'teacher' }); setShowAddModal(true); }}
+                                className="px-4 py-2 rounded-xl bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-all flex items-center gap-2 shadow-lg shadow-primary-200"
+                            >
+                                <HiPlus className="w-4 h-4" /> ADD TEACHER
+                            </button>
+                        )}
                     </div>
                 </div>
 

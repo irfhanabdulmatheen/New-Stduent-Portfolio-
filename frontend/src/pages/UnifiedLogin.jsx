@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginUser } from '../services/api';
@@ -15,36 +15,30 @@ const UnifiedLogin = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    // Autofill dummy data whenever the role changes, for easy testing
-    useEffect(() => {
-        if (selectedRole === 'admin') {
-            setForm({ email: 'admin@example.com', password: 'password123' });
-        } else if (selectedRole === 'teacher') {
-            setForm({ email: 'teacher@example.com', password: 'password123' });
-        } else {
-            setForm({ email: 'student@example.com', password: 'password123' });
-        }
-    }, [selectedRole]);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
             const res = await loginUser(form);
-            
-            // Check if the user is logging in with the correct role tab (optional, but good UX)
-            if (res.data.user.role !== selectedRole && res.data.user.role !== 'admin') {
-                 // We let admin login anywhere, but restrict others
+
+            const normalizeRole = (r) => (typeof r === 'string' ? r.trim().toLowerCase() : '');
+            const actualRole = normalizeRole(res.data.user?.role);
+            const requestedRole = normalizeRole(selectedRole);
+
+            // Enforce: login must be done from the matching role tab.
+            if (actualRole !== requestedRole) {
+                setError(`You are a ${actualRole} account. Please login using the ${actualRole} tab.`);
+                setLoading(false);
+                return;
             }
 
             login(res.data.token, res.data.user);
-            
-            // Redirect based on role
-            const role = res.data.user.role;
-            if (role === 'admin') {
+
+            // Redirect based on role (now it's guaranteed to match requestedRole)
+            if (actualRole === 'admin') {
                 navigate('/admin');
-            } else if (role === 'teacher') {
+            } else if (actualRole === 'teacher') {
                 navigate('/teacher');
             } else {
                 navigate('/student');
@@ -234,12 +228,36 @@ const UnifiedLogin = () => {
                                 </>
                             )}
                         </button>
+
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-gray-200 dark:border-gray-700"></span>
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white dark:bg-dark-card px-2 text-gray-500 dark:text-gray-400">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center w-full">
+                            <div className="w-full overflow-hidden flex justify-center">
+                            {/* Google sign-in removed (use email/password login instead) */}
+                            </div>
+                        </div>
                     </form>
+
+                    {selectedRole === 'student' && (
+                        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+                            Don't have an account?{' '}
+                            <Link to="/register" className="text-[#5046e6] dark:text-[#818cf8] hover:underline font-semibold">
+                                Register
+                            </Link>
+                        </p>
+                    )}
                     
                     <div className="mt-8 text-center bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                        <p className="text-xs text-gray-800 dark:text-gray-300 font-medium mb-1">Testing Mode Active</p>
+                        <p className="text-xs text-gray-800 dark:text-gray-300 font-medium mb-1">Signing in</p>
                         <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Clicking the tabs above will auto-fill dummy credentials for that role. 
+                            Use the email and password from your registration.
                         </p>
                     </div>
                 </div>

@@ -78,7 +78,7 @@ const TeacherStudentDetail = () => {
     }
 
     if (!data) return null;
-    const { user, profile, projects, skills, certifications } = data;
+    const { user, profile, projects, certifications } = data;
 
     return (
         <div className="space-y-6">
@@ -173,19 +173,6 @@ const TeacherStudentDetail = () => {
                 )}
             </div>
 
-            {/* Skills */}
-            <div className="card">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Skills ({skills?.length || 0})</h2>
-                {skills?.length === 0 ? (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm italic">No skills listed.</p>
-                ) : (
-                    <div className="flex flex-wrap gap-2">
-                        {skills?.map((skill) => (
-                            <span key={skill._id} className="px-3 py-1 rounded-full bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 text-xs font-bold uppercase tracking-wider">{skill.skillName} • {skill.level}</span>
-                        ))}
-                    </div>
-                )}
-            </div>
 
             {/* Certifications */}
             <div className="card">
@@ -204,6 +191,13 @@ const TeacherStudentDetail = () => {
                                         <div className="flex items-center gap-2">
                                             <p className="font-bold text-sm text-gray-900 dark:text-white uppercase">{cert.courseName}</p>
                                             {getStatusBadge(cert.status)}
+                                            {cert.link && (
+                                                <a href={cert.link} target="_blank" rel="noopener noreferrer" 
+                                                    className="text-primary-600 hover:text-primary-700 transition-colors"
+                                                    title="View Certification Link">
+                                                    <HiExternalLink className="w-4 h-4" />
+                                                </a>
+                                            )}
                                         </div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">{cert.issuedBy}</p>
                                     </div>

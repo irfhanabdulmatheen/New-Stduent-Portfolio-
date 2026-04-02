@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, role }) => {
     const { user, loading, isAuthenticated } = useAuth();
+    const normalizeRole = (r) => (typeof r === 'string' ? r.trim().toLowerCase() : '');
 
     if (loading) {
         return (
@@ -19,8 +20,14 @@ const ProtectedRoute = ({ children, role }) => {
         return <Navigate to="/login" replace />;
     }
 
-    if (role && user?.role !== role) {
-        return <Navigate to={user?.role === 'admin' ? '/admin' : '/student'} replace />;
+    if (role && normalizeRole(user?.role) !== normalizeRole(role)) {
+        const currentRole = normalizeRole(user?.role);
+        const redirectTo =
+            currentRole === 'admin' ? '/admin' :
+            currentRole === 'teacher' ? '/teacher' :
+            '/student';
+
+        return <Navigate to={redirectTo} replace />;
     }
 
     return children;

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { getCertifications, addCertification, deleteCertification } from '../../services/api';
 import { HiPlus, HiTrash, HiX, HiAcademicCap, HiDownload, HiCheckCircle, HiXCircle, HiClock } from 'react-icons/hi';
+import { toast } from 'react-toastify';
 
 const Certifications = () => {
     const [certs, setCerts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [form, setForm] = useState({ courseName: '', issuedBy: '', completionDate: '' });
+    const [form, setForm] = useState({ courseName: '', issuedBy: '', completionDate: '', link: '' });
     const [file, setFile] = useState(null);
     const [saving, setSaving] = useState(false);
 
@@ -33,20 +34,30 @@ const Certifications = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!form.courseName.trim()) {
+            toast.error('Course name is required');
+            return;
+        }
+
         setSaving(true);
         try {
             const formData = new FormData();
-            formData.append('courseName', form.courseName);
-            formData.append('issuedBy', form.issuedBy);
+            formData.append('courseName', form.courseName.trim());
+            formData.append('issuedBy', form.issuedBy.trim());
             formData.append('completionDate', form.completionDate);
+            formData.append('link', form.link.trim());
             if (file) formData.append('certificateFile', file);
 
             await addCertification(formData);
             setShowModal(false);
-            setForm({ courseName: '', issuedBy: '', completionDate: '' });
+            setForm({ courseName: '', issuedBy: '', completionDate: '', link: '' });
             setFile(null);
-            fetchCerts();
-        } catch (err) { console.error(err); }
+            toast.success('Certification added successfully');
+            await fetchCerts();
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || 'Failed to add certification');
+        }
         setSaving(false);
     };
 
@@ -55,7 +66,11 @@ const Certifications = () => {
         try {
             await deleteCertification(id);
             setCerts(certs.filter(c => c._id !== id));
-        } catch (err) { console.error(err); }
+            toast.success('Certification deleted successfully');
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || 'Failed to delete certification');
+        }
     };
 
     if (loading) {
@@ -110,6 +125,13 @@ const Certifications = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1">
+                                    {cert.link && (
+                                        <a href={cert.link} target="_blank" rel="noopener noreferrer"
+                                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-primary-600 transition-colors"
+                                            title="View Certification Link">
+                                            <HiDownload className="rotate-[-90deg] w-4 h-4" />
+                                        </a>
+                                    )}
                                     {cert.certificateFile && (
                                         <a href={cert.certificateFile} target="_blank" rel="noopener noreferrer"
                                             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-primary-600 transition-colors">
@@ -152,6 +174,11 @@ const Certifications = () => {
                                 <label className="label">Completion Date</label>
                                 <input type="date" className="input-field" value={form.completionDate}
                                     onChange={(e) => setForm({ ...form, completionDate: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="label">Certification Link</label>
+                                <input type="url" className="input-field" placeholder="e.g., https://www.credly.com/..." value={form.link}
+                                    onChange={(e) => setForm({ ...form, link: e.target.value })} />
                             </div>
                             <div>
                                 <label className="label">Certificate File (PDF/Image)</label>

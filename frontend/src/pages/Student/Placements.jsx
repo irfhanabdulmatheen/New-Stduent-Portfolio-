@@ -1,140 +1,189 @@
 import { useState, useEffect } from 'react';
-import { HiBriefcase, HiOfficeBuilding, HiBadgeCheck, HiXCircle } from 'react-icons/hi';
-import { getProfile } from '../../services/api';
+import { getStudentPlacements, addStudentPlacement, deleteStudentPlacement } from '../../services/api';
+import { HiPlus, HiTrash, HiBriefcase } from 'react-icons/hi';
 
 const Placements = () => {
+    const [placements, setPlacements] = useState([]);
     const [loading, setLoading] = useState(true);
-    
-    // Using dummy numbers as per requirements ("shows no of companies attended and no of offers student have")
-    // In a real database this would be tied to the profile or a placements collection.
-    const placementData = {
-        companiesAttended: 8,
-        offersReceived: 2,
-        highestCTC: "12 LPA",
-        applications: [
-            { id: 1, company: 'Google', role: 'Software Engineer', status: 'In Progress', date: '2025-02-15' },
-            { id: 2, company: 'Amazon', role: 'SDE-1', status: 'Offered', date: '2025-01-20' },
-            { id: 3, company: 'TCS', role: 'System Engineer', status: 'Offered', date: '2024-11-05' },
-            { id: 4, company: 'Microsoft', role: 'Software Engineer', status: 'Rejected', date: '2024-12-10' },
-            { id: 5, company: 'Infosys', role: 'System Engineer Specialist', status: 'Applied', date: '2025-03-01' }
-        ]
-    };
+    const [isAdding, setIsAdding] = useState(false);
+    const [formData, setFormData] = useState({ company: '', role: '', package: '', date: '' });
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        // Simulating API fetch
-        const fetchPlacements = async () => {
-            try {
-                // Fake delay to simulate network request
-                setTimeout(() => setLoading(false), 800);
-            } catch (err) {
-                console.error(err);
-                setLoading(false);
-            }
-        };
         fetchPlacements();
     }, []);
 
-    const getStatusBadge = (status) => {
-        switch (status) {
-            case 'Offered': return <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Offered</span>;
-            case 'In Progress': return <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">In Progress</span>;
-            case 'Rejected': return <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Rejected</span>;
-            default: return <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Applied</span>;
+    const fetchPlacements = async () => {
+        try {
+            const res = await getStudentPlacements();
+            setPlacements(res.data);
+        } catch (error) {
+            console.error('Failed to fetch placements', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this placement record?')) return;
+        try {
+            await deleteStudentPlacement(id);
+            setPlacements(placements.filter(p => p._id !== id));
+        } catch (error) {
+            console.error('Failed to delete', error);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const res = await addStudentPlacement(formData);
+            setPlacements([...placements, res.data]);
+            setIsAdding(false);
+            setFormData({ company: '', role: '', package: '', date: '' });
+        } catch (error) {
+            console.error('Failed to add placement', error);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) return <div className="text-center py-10">Loading placements...</div>;
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <HiBriefcase className="w-7 h-7 text-primary-500" />
-                        Placements
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Track your campus placement opportunities and job offers.</p>
-                </div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Placements</h1>
+                <button
+                    onClick={() => setIsAdding(!isAdding)}
+                    className="btn-primary flex items-center gap-2"
+                >
+                    <HiPlus className="w-5 h-5" /> Add Placement
+                </button>
             </div>
 
-            {/* Placement Statistics Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-100 dark:border-blue-800 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-800/50 flex items-center justify-center">
-                        <HiOfficeBuilding className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Companies Attended</p>
-                        <h3 className="text-3xl font-black text-blue-700 dark:text-blue-300">{placementData.companiesAttended}</h3>
-                    </div>
+            {isAdding && (
+                <div className="card">
+                    <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Add New Placement</h2>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="label">Company Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="input-field"
+                                    value={formData.company}
+                                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="label">Role *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="input-field"
+                                    value={formData.role}
+                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="label">Package (CTC)</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    value={formData.package}
+                                    onChange={(e) => setFormData({ ...formData, package: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="label">Date/Year</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    value={formData.date}
+                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-4">
+                            <button
+                                type="button"
+                                onClick={() => setIsAdding(false)}
+                                className="btn-secondary"
+                                disabled={saving}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn-primary"
+                                disabled={saving}
+                            >
+                                {saving ? 'Adding...' : 'Add Placement'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
+            )}
 
-                <div className="card bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-100 dark:border-emerald-800 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center">
-                        <HiBadgeCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Offers Received</p>
-                        <h3 className="text-3xl font-black text-emerald-700 dark:text-emerald-300">{placementData.offersReceived}</h3>
-                    </div>
+            {placements.length === 0 && !isAdding ? (
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <HiBriefcase className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">No placement records</h3>
+                    <p className="text-gray-500">You haven't added any placements yet.</p>
                 </div>
-                
-                <div className="card bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 border-purple-100 dark:border-purple-800 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-800/50 flex items-center justify-center">
-                        <HiBriefcase className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Highest CTC</p>
-                        <h3 className="text-3xl font-black text-purple-700 dark:text-purple-300">{placementData.highestCTC}</h3>
-                    </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {placements.map((placement) => (
+                        <div key={placement._id} className="card flex flex-col h-full bg-white dark:bg-gray-800 relative group overflow-hidden border border-gray-100 dark:border-gray-700 hover:border-primary-200 dark:hover:border-primary-800 transition-all duration-300">
+                            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => handleDelete(placement._id)}
+                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                    title="Delete"
+                                >
+                                    <HiTrash className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="mb-4 flex items-start gap-3">
+                                <div className="p-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg">
+                                    <HiBriefcase className="w-6 h-6" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white truncate" title={placement.role}>
+                                        {placement.role}
+                                    </h3>
+                                    <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">
+                                        {placement.company}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500 dark:text-gray-400">Package:</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{placement.package || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500 dark:text-gray-400">Date:</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{placement.date || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm pt-1">
+                                    <span className="text-gray-500 dark:text-gray-400">Status:</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                        placement.status === 'Placed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                        placement.status === 'Rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                    }`}>
+                                        {placement.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            </div>
-
-            {/* Applications List */}
-            <div className="card mt-8 border-t-4 border-t-primary-500">
-                <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-6">Application History</h3>
-                
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-gray-100 dark:border-gray-800 text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                <th className="pb-4 pl-4">Company</th>
-                                <th className="pb-4">Role</th>
-                                <th className="pb-4">Date Applied</th>
-                                <th className="pb-4 text-right pr-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50 text-sm">
-                            {placementData.applications.map((app) => (
-                                <tr key={app.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                                    <td className="py-4 pl-4 font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-500">
-                                            {app.company.charAt(0)}
-                                        </div>
-                                        {app.company}
-                                    </td>
-                                    <td className="py-4 text-gray-600 dark:text-gray-300 font-medium">
-                                        {app.role}
-                                    </td>
-                                    <td className="py-4 text-gray-500 dark:text-gray-400 font-mono text-xs">
-                                        {new Date(app.date).toLocaleDateString('en-GB')}
-                                    </td>
-                                    <td className="py-4 text-right pr-4">
-                                        {getStatusBadge(app.status)}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
+            )}
         </div>
     );
 };

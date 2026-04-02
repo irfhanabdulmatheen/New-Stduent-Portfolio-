@@ -28,14 +28,11 @@ const Analytics = () => {
     const metrics = [
         { label: 'Total Students', value: analytics?.totalStudents || 0, icon: HiUsers, color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400' },
         { label: 'Total Projects', value: analytics?.totalProjects || 0, icon: HiCollection, color: 'text-violet-600 bg-violet-50 dark:bg-violet-900/20 dark:text-violet-400' },
-        { label: 'Total Skills', value: analytics?.totalSkills || 0, icon: HiLightningBolt, color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400' },
         { label: 'Certifications', value: analytics?.totalCertifications || 0, icon: HiAcademicCap, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400' },
     ];
 
     const avgProjects = analytics?.totalStudents > 0
         ? (analytics.totalProjects / analytics.totalStudents).toFixed(1) : 0;
-    const avgSkills = analytics?.totalStudents > 0
-        ? (analytics.totalSkills / analytics.totalStudents).toFixed(1) : 0;
 
     return (
         <div className="space-y-8">
@@ -75,16 +72,6 @@ const Analytics = () => {
                             <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                                 <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-700"
                                     style={{ width: `${Math.min(avgProjects * 20, 100)}%` }}></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-sm mb-1">
-                                <span className="text-gray-600 dark:text-gray-400">Avg. Skills</span>
-                                <span className="font-semibold text-gray-900 dark:text-white">{avgSkills}</span>
-                            </div>
-                            <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-700"
-                                    style={{ width: `${Math.min(avgSkills * 15, 100)}%` }}></div>
                             </div>
                         </div>
                     </div>

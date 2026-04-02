@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5001/api',
+    baseURL: '/api',
 });
 
 // Add a request interceptor to add the auth token to headers
@@ -18,6 +18,7 @@ api.interceptors.request.use(
 
 // Auth
 export const loginUser = (data) => api.post('/auth/login', data);
+export const googleLogin = (idToken) => api.post('/auth/google-login', { idToken });
 export const registerUser = (data) => api.post('/auth/register', data);
 export const registerStudent = (data) => api.post('/auth/register', data);
 export const getMe = () => api.get('/auth/me');
@@ -38,15 +39,6 @@ export const addStudentProject = addProject; // Alias
 export const updateStudentProject = updateProject; // Alias
 export const deleteStudentProject = deleteProject; // Alias
 
-// Student Skills
-export const getSkills = () => api.get('/student/skills');
-export const addSkill = (data) => api.post('/student/skills', data);
-export const updateSkill = (id, data) => api.put(`/student/skills/${id}`, data);
-export const deleteSkill = (id) => api.delete(`/student/skills/${id}`);
-export const getStudentSkills = getSkills; // Alias
-export const addStudentSkill = addSkill; // Alias
-export const updateStudentSkill = updateSkill; // Alias
-export const deleteStudentSkill = deleteSkill; // Alias
 
 // Student Certifications
 export const getCertifications = () => api.get('/student/certifications');
@@ -55,6 +47,14 @@ export const deleteCertification = (id) => api.delete(`/student/certifications/$
 export const getStudentCertifications = getCertifications; // Alias
 export const addStudentCertification = addCertification; // Alias
 export const deleteStudentCertification = deleteCertification; // Alias
+
+// Student Placements
+export const getPlacements = () => api.get('/student/placements');
+export const addPlacement = (data) => api.post('/student/placements', data);
+export const deletePlacement = (id) => api.delete(`/student/placements/${id}`);
+export const getStudentPlacements = getPlacements; // Alias
+export const addStudentPlacement = addPlacement; // Alias
+export const deleteStudentPlacement = deletePlacement; // Alias
 
 // Admin
 export const getStudents = (params) => api.get('/admin/students', { params });
@@ -68,11 +68,15 @@ export const adminDeleteProject = (id) => api.delete(`/admin/projects/${id}`);
 export const getAnalytics = () => api.get('/admin/analytics');
 export const getPendingProjects = () => api.get('/admin/projects/pending');
 export const updateProjectStatus = (id, status) => api.put(`/admin/projects/${id}/status`, { status });
+export const getAdminDepartments = () => api.get('/admin/departments');
+export const createAdminDepartment = (data) => api.post('/admin/departments', data);
 
 // Teacher
 export const getAssignedStudents = (params) => api.get('/teacher/students', { params });
 export const getAssignedStudentDetail = (id) => api.get(`/teacher/students/${id}`);
 export const teacherUpdateProjectStatus = (id, status) => api.put(`/teacher/projects/${id}/status`, { status });
 export const teacherUpdateCertStatus = (id, status) => api.put(`/teacher/certifications/${id}/status`, { status });
+export const addTeacherReview = (data) => api.post('/teacher/reviews', data);
+export const getTeacherReports = () => api.get('/teacher/reports');
 
 export default api;

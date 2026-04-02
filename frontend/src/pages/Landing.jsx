@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { HiAcademicCap, HiLightningBolt, HiCollection, HiShieldCheck, HiArrowRight } from 'react-icons/hi';
+import { HiAcademicCap, HiCollection, HiShieldCheck, HiArrowRight } from 'react-icons/hi';
 import DarkModeToggle from '../components/DarkModeToggle';
 
 const Landing = () => {
@@ -10,12 +10,7 @@ const Landing = () => {
             description: 'Display your best work with rich details, tech stacks, and live links.',
             color: 'from-blue-500 to-cyan-500'
         },
-        {
-            icon: HiLightningBolt,
-            title: 'Skills & Expertise',
-            description: 'Highlight your technical skills with visual progress indicators.',
-            color: 'from-amber-500 to-orange-500'
-        },
+
         {
             icon: HiAcademicCap,
             title: 'Certifications',
@@ -63,7 +58,7 @@ const Landing = () => {
                         <br />Portfolio Today
                     </h1>
                     <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        Showcase your projects, skills, and achievements in a beautifully designed portfolio.
+                        Showcase your projects and achievements in a beautifully designed portfolio.
                         Stand out to recruiters and peers with a professional presence.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { registerStudent } from '../services/api';
-import { HiMail, HiLockClosed, HiUser, HiEye, HiEyeOff } from 'react-icons/hi';
+import { registerStudent, updateProfile } from '../services/api';
+import { HiMail, HiLockClosed, HiUser, HiEye, HiEyeOff, HiAcademicCap } from 'react-icons/hi';
 import DarkModeToggle from '../components/DarkModeToggle';
 
 const StudentRegister = () => {
+    const [step, setStep] = useState(1);
     const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+    const [profileForm, setProfileForm] = useState({
+        rollNo: '', degree: '', department: '', year: '', phone: '', currentArrears: '0', cgpaSemesters: ['', '', '', '', '', '', '', ''], cgpa: ''
+    });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -26,9 +30,24 @@ const StudentRegister = () => {
         try {
             const res = await registerStudent({ name: form.name, email: form.email, password: form.password });
             login(res.data.token, res.data.user);
-            navigate('/student');
+            setStep(2);
+            setError('');
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed');
+        }
+        setLoading(false);
+    };
+
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            const data = { ...profileForm, cgpaSemesters: JSON.stringify(profileForm.cgpaSemesters) };
+            await updateProfile(data);
+            navigate('/student');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to complete profile');
         }
         setLoading(false);
     };
@@ -65,8 +84,17 @@ const StudentRegister = () => {
                         <DarkModeToggle />
                     </div>
 
+                    {step === 1 ? (
+                    <>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create account</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-8">Start building your portfolio</p>
+                    </>
+                    ) : (
+                    <>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Complete Profile</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8">Add your academic details</p>
+                    </>
+                    )}
 
                     {error && (
                         <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 
@@ -75,6 +103,8 @@ const StudentRegister = () => {
                         </div>
                     )}
 
+                    {step === 1 ? (
+                    <>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="label">Full Name</label>
@@ -162,6 +192,74 @@ const StudentRegister = () => {
                         Already have an account?{' '}
                         <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold">Sign In</Link>
                     </p>
+                    </>
+                    ) : (
+                    <form onSubmit={handleProfileSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-2">Roll Number</label>
+                                <input required type="text" value={profileForm.rollNo} onChange={e => setProfileForm({...profileForm, rollNo: e.target.value})} className="input-field" placeholder="e.g. 7376231CS101" />
+                            </div>
+                            <div>
+                                <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-2">Phone</label>
+                                <input required type="text" value={profileForm.phone} onChange={e => setProfileForm({...profileForm, phone: e.target.value})} className="input-field" placeholder="+91 98765 43210" />
+                            </div>
+                            <div>
+                                <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-2">Degree</label>
+                                <select required value={profileForm.degree} onChange={e => setProfileForm({...profileForm, degree: e.target.value})} className="input-field">
+                                    <option value="">Select Degree</option>
+                                    <option value="B.E.">B.E.</option>
+                                    <option value="B.Tech.">B.Tech.</option>
+                                    <option value="M.E.">M.E.</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-2">Department</label>
+                                <input required type="text" value={profileForm.department} onChange={e => setProfileForm({...profileForm, department: e.target.value})} className="input-field" placeholder="Computer Science" />
+                            </div>
+                            <div>
+                                <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-2">Year</label>
+                                <select required value={profileForm.year} onChange={e => setProfileForm({...profileForm, year: e.target.value})} className="input-field">
+                                    <option value="">Select Year</option>
+                                    <option value="1st Year">1st Year</option>
+                                    <option value="2nd Year">2nd Year</option>
+                                    <option value="3rd Year">3rd Year</option>
+                                    <option value="4th Year">4th Year</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-2">Arrears</label>
+                                <input required type="number" min="0" value={profileForm.currentArrears} onChange={e => setProfileForm({...profileForm, currentArrears: e.target.value})} className="input-field" />
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-2">Overall CGPA</label>
+                                <input required type="number" step="0.01" min="0" max="10" value={profileForm.cgpa} onChange={e => setProfileForm({...profileForm, cgpa: e.target.value})} className="input-field" placeholder="e.g. 8.5" />
+                            </div>
+                        </div>
+
+                        <div className="border-t border-gray-100 dark:border-dark-border pt-4 mt-2">
+                            <label className="block tracking-widest text-[10px] font-bold text-gray-500 uppercase mb-3 text-center">Semester-wise CGPA </label>
+                            <div className="grid grid-cols-4 gap-2">
+                                {Array.from({ length: 8 }).map((_, i) => (
+                                    <div key={i}>
+                                        <input type="number" step="0.01" min="0" max="10" 
+                                            value={profileForm.cgpaSemesters[i] || ''} 
+                                            onChange={e => {
+                                                const newArr = [...profileForm.cgpaSemesters];
+                                                newArr[i] = e.target.value;
+                                                setProfileForm({...profileForm, cgpaSemesters: newArr});
+                                            }}
+                                            className="w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-bg focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white text-xs text-center" placeholder={`S${i+1}`} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button type="submit" disabled={loading} className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed mt-4">
+                            {loading ? 'Saving...' : 'Finish Setup'}
+                        </button>
+                    </form>
+                    )}
                 </div>
             </div>
         </div>

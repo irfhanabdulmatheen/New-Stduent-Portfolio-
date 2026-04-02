@@ -67,7 +67,6 @@ const TeacherDashboard = () => {
                                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Student</th>
                                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Department</th>
                                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Projects</th>
-                                    <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Skills</th>
                                     <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -91,9 +90,7 @@ const TeacherDashboard = () => {
                                         <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">
                                             {student.projectCount || 0}
                                         </td>
-                                        <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">
-                                            {student.skillCount || 0}
-                                        </td>
+
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-2">
                                                 <Link to={`/teacher/students/${student._id}`}

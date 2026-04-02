@@ -50,7 +50,6 @@ const AdminDashboard = () => {
         { label: 'Active Students', value: analytics?.activeStudents || 0, icon: HiCheckCircle, color: 'from-emerald-500 to-teal-500' },
         { label: 'Blocked Students', value: analytics?.blockedStudents || 0, icon: HiShieldExclamation, color: 'from-red-500 to-pink-500' },
         { label: 'Total Projects', value: analytics?.totalProjects || 0, icon: HiCollection, color: 'from-violet-500 to-purple-500' },
-        { label: 'Total Skills', value: analytics?.totalSkills || 0, icon: HiLightningBolt, color: 'from-amber-500 to-orange-500' },
         { label: 'Certifications', value: analytics?.totalCertifications || 0, icon: HiAcademicCap, color: 'from-indigo-500 to-blue-500' },
     ];
 

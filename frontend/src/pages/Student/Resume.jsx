@@ -47,7 +47,7 @@ const Resume = () => {
 
     if (!data) return <div className="card text-center py-8 text-gray-500">Failed to load resume data</div>;
 
-    const { user, profile, projects, skills, certifications } = data;
+    const { user, profile, projects, certifications } = data;
 
     return (
         <div className="space-y-6">
@@ -89,19 +89,6 @@ const Resume = () => {
                         </section>
                     )}
 
-                    {/* Skills */}
-                    {skills?.length > 0 && (
-                        <section>
-                            <h2 className="text-lg font-bold text-gray-900 border-b-2 border-primary-500 pb-1 mb-3">Skills</h2>
-                            <div className="flex flex-wrap gap-2">
-                                {skills.map((skill) => (
-                                    <span key={skill._id} className="px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-                                        {skill.skillName} <span className="text-gray-400">• {skill.level}</span>
-                                    </span>
-                                ))}
-                            </div>
-                        </section>
-                    )}
 
                     {/* Projects */}
                     {projects?.length > 0 && (
@@ -138,9 +125,14 @@ const Resume = () => {
                             <div className="space-y-2">
                                 {certifications.map((cert) => (
                                     <div key={cert._id} className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium text-gray-900">{cert.courseName}</p>
-                                            <p className="text-sm text-gray-500">{cert.issuedBy}</p>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="font-medium text-gray-900">{cert.courseName}</p>
+                                                <p className="text-sm text-gray-500">{cert.issuedBy}</p>
+                                            </div>
+                                            {cert.link && (
+                                                <a href={cert.link} target="_blank" rel="noopener noreferrer" className="text-primary-600 font-bold text-[10px] uppercase">View Cert</a>
+                                            )}
                                         </div>
                                         {cert.completionDate && (
                                             <span className="text-xs text-gray-400">{new Date(cert.completionDate).toLocaleDateString()}</span>
