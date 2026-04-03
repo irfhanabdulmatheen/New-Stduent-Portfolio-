@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getProfile, getProjects, getCertifications, updateProfile } from '../../services/api';
+import { API_ORIGIN } from '../../services/api';
 import {
     HiLogout, HiPhone, HiDocumentText,
     HiFolderOpen, HiExternalLink, HiAcademicCap,
@@ -118,7 +119,7 @@ const StudentDashboard = () => {
                         <div className="relative pt-4">
                             <div className="relative inline-block mb-4">
                                 <img
-                                    src={profile?.profileImage ? `http://localhost:5001${profile.profileImage}` : defaultAvatar}
+                                    src={profile?.profileImage ? `${API_ORIGIN}${profile.profileImage}` : defaultAvatar}
                                     alt="Profile"
                                     className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md mx-auto"
                                 />

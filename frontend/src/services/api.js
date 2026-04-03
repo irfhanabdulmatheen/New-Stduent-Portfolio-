@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+export const API_ORIGIN = import.meta.env.VITE_API_URL || 'https://new-stduent-portfolio.onrender.com';
+export const API_BASE_URL = `${API_ORIGIN}/api`;
+
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: API_BASE_URL,
 });
 
 // Add a request interceptor to add the auth token to headers
