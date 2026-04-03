@@ -5,7 +5,28 @@ export const API_BASE_URL = `${API_ORIGIN}/api`;
 
 const api = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 15000,
 });
+
+export const getApiErrorMessage = (error, fallback = 'Request failed') => {
+    if (error?.response?.data?.message) {
+        return error.response.data.message;
+    }
+
+    if (Array.isArray(error?.response?.data?.errors) && error.response.data.errors.length > 0) {
+        return error.response.data.errors[0]?.msg || fallback;
+    }
+
+    if (error?.code === 'ECONNABORTED') {
+        return 'The server took too long to respond. Please try again.';
+    }
+
+    if (error?.request && !error?.response) {
+        return `Cannot reach the backend at ${API_ORIGIN}. Check the deployed backend URL and CORS settings.`;
+    }
+
+    return fallback;
+};
 
 // Add a request interceptor to add the auth token to headers
 api.interceptors.request.use(

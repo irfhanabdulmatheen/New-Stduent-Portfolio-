@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { loginUser } from '../services/api';
+import { getApiErrorMessage, loginUser } from '../services/api';
 import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiAcademicCap, HiUser, HiBadgeCheck, HiBriefcase, HiArrowRight } from 'react-icons/hi';
 import DarkModeToggle from '../components/DarkModeToggle';
 
@@ -44,7 +44,7 @@ const UnifiedLogin = () => {
                 navigate('/student');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            setError(getApiErrorMessage(err, 'Login failed'));
         }
         setLoading(false);
     };

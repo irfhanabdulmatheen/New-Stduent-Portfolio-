@@ -33,16 +33,28 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Middleware
+const normalizeOrigin = (origin) => origin?.replace(/\/$/, '');
+const configuredOrigins = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((origin) => normalizeOrigin(origin.trim()))
+    .filter(Boolean);
+
 const allowedOrigins = [
-    process.env.FRONTEND_URL,
+    ...configuredOrigins,
     'http://localhost:3000',
     'http://localhost:5173'
-].filter(Boolean);
+].map(normalizeOrigin);
 
 app.use(cors({
     origin: (origin, callback) => {
         // Allow server-to-server calls and tools without an Origin header.
-        if (!origin || allowedOrigins.includes(origin)) {
+        const normalizedOrigin = normalizeOrigin(origin);
+
+        if (
+            !normalizedOrigin ||
+            allowedOrigins.includes(normalizedOrigin) ||
+            /\.vercel\.app$/.test(new URL(normalizedOrigin).hostname)
+        ) {
             return callback(null, true);
         }
         return callback(new Error('Not allowed by CORS'));
@@ -69,6 +81,9 @@ app.get('/api/health', (req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
+    if (err.message === 'Not allowed by CORS') {
+        return res.status(403).json({ message: 'Frontend origin is not allowed by CORS' });
+    }
     if (err.name === 'MulterError') {
         return res.status(400).json({ message: `Upload error: ${err.message}` });
     }
