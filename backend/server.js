@@ -5,6 +5,7 @@ const fs = require('fs');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
+const ensureAdmin = require('./utils/ensureAdmin');
 
 // Create Express app
 const app = express();
@@ -13,6 +14,7 @@ const app = express();
 const startServer = async () => {
     try {
         await connectDB();
+        await ensureAdmin();
         
         const PORT = process.env.PORT || 5000;
         app.listen(PORT, () => {

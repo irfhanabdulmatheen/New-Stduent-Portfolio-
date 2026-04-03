@@ -1,8 +1,7 @@
-const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const User = require('../models/User');
+const ensureAdmin = require('./ensureAdmin');
 
 const createAdmin = async () => {
     try {
@@ -10,32 +9,15 @@ const createAdmin = async () => {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('Connected to MongoDB');
 
-        // Always target the specific admin email
-        let admin = await User.findOne({ email: 'admin@portfolio.com' });
+        process.env.ADMIN_NAME = process.env.ADMIN_NAME || 'Admin';
+        process.env.ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@portfolio.com';
+        process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-        if (admin) {
-            console.log('Admin already exists. Resetting password and role...');
-            admin.password = 'admin123';
-            admin.role = 'admin';
-            admin.isActive = true;
-            await admin.save();
-            console.log('Admin account updated/reset successfully!');
-        } else {
-            console.log('Creating new admin account...');
-            admin = new User({
-                name: 'Admin',
-                email: 'admin@portfolio.com',
-                password: 'admin123',
-                role: 'admin',
-                isActive: true
-            });
-            await admin.save();
-            console.log('Admin created successfully!');
-        }
+        await ensureAdmin();
 
         console.log('-----------------------------------');
-        console.log('EMAIL: admin@portfolio.com');
-        console.log('PASSWORD: admin123');
+        console.log(`EMAIL: ${process.env.ADMIN_EMAIL}`);
+        console.log(`PASSWORD: ${process.env.ADMIN_PASSWORD}`);
         console.log('ROLE: admin');
         console.log('-----------------------------------');
 
