@@ -4,7 +4,7 @@ const StudentController = require('./controllers/studentController');
 const User = require('./models/User');
 
 (async () => {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/student-portfolio');
+    await mongoose.connect(process.env.MONGO_URI);
     const user = await User.findOne({ email: 'student@example.com' });
     if (!user) {
         console.error('Student not found');

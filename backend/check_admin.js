@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const checkAdmin = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/student-portfolio');
+    await mongoose.connect(process.env.MONGO_URI);
     const user = await User.findOne({ email: 'admin@example.com' });
     if (user) {
       console.log(`User found: ${user.email}, Role: ${user.role}`);

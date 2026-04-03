@@ -5,7 +5,7 @@ require('dotenv').config();
 const debug = async () => {
     try {
         console.log('Connecting to MongoDB...');
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/student-portfolio');
+        await mongoose.connect(process.env.MONGO_URI);
         console.log('Connected!');
 
         const email = 'debug@test.com';

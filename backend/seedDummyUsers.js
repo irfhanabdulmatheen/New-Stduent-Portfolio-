@@ -3,7 +3,7 @@ const User = require('./models/User');
 const Profile = require('./models/Profile');
 require('dotenv').config();
 
-const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/student-portfolio';
+const uri = process.env.MONGO_URI;
 
 const recreateUsers = async () => {
     try {

@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const { login } = require('./controllers/authController');
+require('dotenv').config();
 
 const simulateLogin = async () => {
-  await mongoose.connect('mongodb://127.0.0.1:27017/student-portfolio');
+  await mongoose.connect(process.env.MONGO_URI);
   const req = {
     body: { email: 'student@example.com', password: 'password123' },
     get() { return undefined; }

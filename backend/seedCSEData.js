@@ -5,7 +5,7 @@ const Project = require('./models/Project');
 
 const Certification = require('./models/Certification');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/student-portfolio';
+const MONGO_URI = process.env.MONGO_URI;
 
 const seedCSEData = async () => {
     try {
