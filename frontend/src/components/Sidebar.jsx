@@ -25,6 +25,7 @@ const Sidebar = () => {
     ];
 
     const adminLinks = [
+        { to: '/admin', icon: HiHome, label: 'Dashboard', end: true },
         { to: '/admin/students', icon: HiUsers, label: 'User Management' },
     ];
 

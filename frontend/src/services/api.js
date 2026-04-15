@@ -83,6 +83,7 @@ export const deleteStudentPlacement = deletePlacement; // Alias
 // Admin
 export const getStudents = (params) => api.get('/admin/students', { params });
 export const getTeachers = () => api.get('/admin/teachers');
+export const getTeacherStudents = (teacherId) => api.get(`/admin/teachers/${teacherId}/students`);
 export const createUser = (data) => api.post('/admin/users', data);
 export const deleteUser = (id) => api.delete(`/admin/users/${id}`);
 export const assignStudentToTeacher = (studentId, teacherId) => api.put(`/admin/students/${studentId}/assign`, { teacherId });

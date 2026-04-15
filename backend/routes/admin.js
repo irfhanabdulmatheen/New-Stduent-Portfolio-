@@ -9,6 +9,7 @@ const {
     deleteProject,
     getAnalytics,
     getTeachers,
+    getTeacherStudents,
     createUser,
     deleteUser,
     assignStudentToTeacher,
@@ -27,6 +28,7 @@ router.put('/students/:id/assign', assignStudentToTeacher);
 
 // Teachers
 router.get('/teachers', getTeachers);
+router.get('/teachers/:id/students', getTeacherStudents);
 
 // Users
 router.post('/users', createUser);

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getStudents, getTeachers, getAnalytics, toggleBlockStudent, createUser, deleteUser, assignStudentToTeacher } from '../../services/api';
-import { HiSearch, HiEye, HiBan, HiCheckCircle, HiTrash, HiPlus, HiUserAdd, HiUsers, HiUserGroup, HiAcademicCap, HiShieldCheck, HiPencil, HiCollection } from 'react-icons/hi';
+import { HiSearch, HiEye, HiBan, HiCheckCircle, HiTrash, HiPlus, HiUserAdd, HiUsers, HiUserGroup, HiAcademicCap, HiShieldCheck, HiPencil, HiCollection, HiX } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const StudentList = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState('students');
     const [students, setStudents] = useState([]);
     const [teachers, setTeachers] = useState([]);
@@ -14,6 +15,7 @@ const StudentList = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [deptFilter, setDeptFilter] = useState('');
+    const [teacherFilter, setTeacherFilter] = useState(() => searchParams.get('teacher') || '');
 
     // Modals state
     const [showAddModal, setShowAddModal] = useState(false);
@@ -118,7 +120,7 @@ const StudentList = () => {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-dark-border">
-                    {students.map((student) => (
+                    {students.filter(student => !teacherFilter || student.profile?.teacherId?.toString() === teacherFilter.toString()).map((student) => (
                         <tr key={student._id} className="group hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
                             <td className="py-5 pl-2">
                                 <div className="flex items-center gap-3">
@@ -233,13 +235,25 @@ const StudentList = () => {
                                 </div>
                             </td>
                             <td className="py-5 pr-2 text-right">
-                                <button
-                                    onClick={() => handleDeleteUser(teacher._id, 'teacher')}
-                                    className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
-                                    title="Remove Teacher"
-                                >
-                                    <HiTrash className="w-4 h-4" />
-                                </button>
+                                <div className="flex items-center justify-end gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setTeacherFilter(teacher._id);
+                                            setActiveTab('students');
+                                        }}
+                                        className="py-1 px-3 rounded-lg hover:bg-emerald-50 text-emerald-600 transition-colors flex items-center gap-1 border border-transparent hover:border-emerald-200 dark:hover:bg-emerald-900/20 dark:hover:border-emerald-900/50"
+                                        title="View Students"
+                                    >
+                                        <HiEye className="w-4 h-4" /> <span className="text-[10px] font-bold">VIEW STUDENTS</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteUser(teacher._id, 'teacher')}
+                                        className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                                        title="Remove Teacher"
+                                    >
+                                        <HiTrash className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -330,6 +344,16 @@ const StudentList = () => {
                     <div className="flex items-center gap-2 flex-wrap">
                         {activeTab === 'students' && (
                             <div className="flex items-center gap-2 flex-wrap">
+                                {teacherFilter && (
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/50">
+                                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                                            Mentor: {teachers.find(t => t._id === teacherFilter)?.name || 'Unknown'}
+                                        </span>
+                                        <button onClick={() => setTeacherFilter('')} className="text-emerald-500 hover:text-emerald-700 flex items-center">
+                                            <HiX className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                )}
                                 <div className="relative">
                                     <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -355,6 +379,7 @@ const StudentList = () => {
                                     onClick={() => {
                                         setSearch('');
                                         setDeptFilter('');
+                                        setTeacherFilter('');
                                         setTimeout(() => fetchData(), 0);
                                     }}
                                     className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"

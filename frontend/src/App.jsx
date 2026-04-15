@@ -15,6 +15,7 @@ import StudentCertifications from './pages/Student/Certifications';
 import StudentPlacements from './pages/Student/Placements';
 
 // Admin Pages
+import AdminDashboard from './pages/Admin/Dashboard';
 import AdminStudentList from './pages/Admin/StudentList';
 import AdminStudentDetail from './pages/Admin/StudentDetail';
 
@@ -62,7 +63,7 @@ function App() {
                             </ProtectedRoute>
                         }
                     >
-                        <Route index element={<Navigate to="/admin/students" replace />} />
+                        <Route index element={<AdminDashboard />} />
                         <Route path="students" element={<AdminStudentList />} />
                         <Route path="students/:id" element={<AdminStudentDetail />} />
                         <Route path="*" element={<Navigate to="/admin/students" replace />} />

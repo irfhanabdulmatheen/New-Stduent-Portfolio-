@@ -1,22 +1,26 @@
 import { useState, useEffect } from 'react';
-import { getAnalytics, getPendingProjects, updateProjectStatus } from '../../services/api';
-import { HiUsers, HiCollection, HiLightningBolt, HiAcademicCap, HiShieldExclamation, HiCheckCircle, HiCheck, HiX } from 'react-icons/hi';
-import { Link } from 'react-router-dom';
+import { getAnalytics, getPendingProjects, updateProjectStatus, getTeachers } from '../../services/api';
+import { HiUsers, HiCollection, HiLightningBolt, HiAcademicCap, HiShieldExclamation, HiCheckCircle, HiCheck, HiX, HiUserGroup, HiEye, HiChevronRight } from 'react-icons/hi';
+import { Link, useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
+    const navigate = useNavigate();
     const [analytics, setAnalytics] = useState(null);
     const [pendingProjects, setPendingProjects] = useState([]);
+    const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [analyticsRes, pendingRes] = await Promise.all([
+                const [analyticsRes, pendingRes, teachersRes] = await Promise.all([
                     getAnalytics(),
-                    getPendingProjects()
+                    getPendingProjects(),
+                    getTeachers()
                 ]);
                 setAnalytics(analyticsRes.data);
                 setPendingProjects(pendingRes.data);
+                setTeachers(teachersRes.data);
             } catch (err) { console.error(err); }
             setLoading(false);
         };
@@ -27,7 +31,6 @@ const AdminDashboard = () => {
         try {
             await updateProjectStatus(id, status);
             setPendingProjects(prev => prev.filter(p => p._id !== id));
-            // Update local analytics if approved
             if (status === 'approved' && analytics) {
                 setAnalytics(prev => ({
                     ...prev,
@@ -119,6 +122,64 @@ const AdminDashboard = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Faculty Overview */}
+            {teachers.length > 0 && (
+                <div className="card">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <HiUserGroup className="w-5 h-5 text-emerald-500" />
+                            Faculty Overview
+                        </h2>
+                        <Link to="/admin/students" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                            Manage All →
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {teachers.map(teacher => (
+                            <div
+                                key={teacher._id}
+                                className="group relative flex flex-col gap-3 p-4 rounded-2xl border border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-800/30 hover:bg-white dark:hover:bg-gray-800/60 hover:shadow-lg hover:border-emerald-200 dark:hover:border-emerald-900/50 transition-all duration-200 cursor-pointer"
+                                onClick={() => navigate(`/admin/students?teacher=${teacher._id}`)}
+                            >
+                                {/* Teacher avatar + info */}
+                                <div className="flex items-center gap-3">
+                                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
+                                        {teacher.name?.[0]?.toUpperCase()}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{teacher.name}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{teacher.email}</p>
+                                    </div>
+                                </div>
+
+                                {/* Student count badge */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
+                                            teacher.studentCount > 0
+                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                                : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                                        }`}>
+                                            <HiUsers className="w-3.5 h-3.5" />
+                                            {teacher.studentCount || 0} {teacher.studentCount === 1 ? 'Student' : 'Students'}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-xs font-semibold text-primary-600 dark:text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <HiEye className="w-3.5 h-3.5" />
+                                        View
+                                    </div>
+                                </div>
+
+                                {/* Arrow indicator */}
+                                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <HiChevronRight className="w-4 h-4 text-emerald-500" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Department Distribution */}
             {analytics?.departmentDistribution && Object.keys(analytics.departmentDistribution).length > 0 && (

@@ -133,6 +133,56 @@ exports.getTeachers = async (req, res) => {
     }
 };
 
+// @desc    Get all students assigned to a specific teacher
+// @route   GET /api/admin/teachers/:id/students
+exports.getTeacherStudents = async (req, res) => {
+    try {
+        const teacher = await User.findById(req.params.id).select('-password');
+        if (!teacher || normalizeRole(teacher.role) !== 'teacher') {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
+
+        // Find all profiles assigned to this teacher
+        const assignedProfiles = await Profile.find({ teacherId: req.params.id });
+        const studentIds = assignedProfiles.map(p => p.userId);
+
+        // Fetch the student users
+        const students = await User.find({
+            _id: { $in: studentIds },
+            role: { $regex: '^student$', $options: 'i' }
+        }).select('-password').sort({ createdAt: -1 });
+
+        // Build profile & project count maps
+        const [projectCountsAgg] = await Promise.all([
+            Project.aggregate([
+                { $match: { userId: { $in: studentIds } } },
+                { $group: { _id: '$userId', count: { $sum: 1 } } }
+            ])
+        ]);
+
+        const profileMap = {};
+        for (const p of assignedProfiles) {
+            profileMap[p.userId.toString()] = p;
+        }
+
+        const projectCountMap = {};
+        for (const item of projectCountsAgg) {
+            projectCountMap[item._id.toString()] = item.count;
+        }
+
+        const result = students.map(student => ({
+            ...student.toObject(),
+            profile: profileMap[student._id.toString()] || null,
+            projectCount: projectCountMap[student._id.toString()] || 0
+        }));
+
+        res.json({ teacher, students: result });
+    } catch (error) {
+        console.error('getTeacherStudents error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // @desc    Create a new user (Teacher or Student)
 // @route   POST /api/admin/users
 exports.createUser = async (req, res) => {
